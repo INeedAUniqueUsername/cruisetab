@@ -26,64 +26,6 @@ CREATE SEQUENCE repair_seq START WITH 1;
 DROP SEQUENCE IF EXISTS schedule_seq;
 CREATE SEQUENCE schedule_seq START WITH 1;
 
----------------
----RELATIONS---
----------------
-
-CREATE TABLE Reservation
-(
-	rnum INTEGER NOT NULL,
-	ccid INTEGER NOT NULL,
-	cid INTEGER NOT NULL,
-	status _STATUS,
-	PRIMARY KEY (rnum),
-	FOREIGN KEY (ccid) REFERENCES Customer(id),
-	FOREIGN KEY (cid) REFERENCES Cruise(cnum)
-);
-
-CREATE TABLE CruiseInfo
-(
-	ciid INTEGER NOT NULL,
-	cruise_id INTEGER NOT NULL,
-	captain_id INTEGER NOT NULL,
-	ship_id INTEGER NOT NULL,
-	PRIMARY KEY (ciid),
-	FOREIGN KEY (cruise_id) REFERENCES Cruise(cnum),
-	FOREIGN KEY (captain_id) REFERENCES Captain(id),
-	FOREIGN KEY (ship_id) REFERENCES Ship(id)
-);
-
-CREATE TABLE Repairs
-(
-	rid INTEGER NOT NULL,
-	repair_date DATE NOT NULL,
-	repair_code _CODE,
-	captain_id INTEGER NOT NULL,
-	ship_id INTEGER NOT NULL,
-	technician_id INTEGER NOT NULL,
-	PRIMARY KEY (rid),
-	FOREIGN KEY (captain_id) REFERENCES Captain(id),
-	FOREIGN KEY (ship_id) REFERENCES Ship(id),
-	FOREIGN KEY (technician_id) REFERENCES Technician(id)
-);
-
-CREATE TABLE Schedule
-(
-	id INTEGER NOT NULL,
-	cruiseNum INTEGER NOT NULL,
-	departure_time DATE NOT NULL,
-	arrival_time DATE NOT NULL,
-	PRIMARY KEY (id),
-	FOREIGN KEY (cruiseNum) REFERENCES Cruise(cnum)
-);
-
-
-
-
-
-
-
-
 DROP TABLE IF EXISTS Customer CASCADE;--OK
 DROP TABLE IF EXISTS Cruise CASCADE;--OK
 DROP TABLE IF EXISTS Captain CASCADE;--OK

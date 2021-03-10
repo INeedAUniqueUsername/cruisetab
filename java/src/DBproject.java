@@ -27,8 +27,6 @@ import java.util.function.Predicate;
 
 import javax.sql.rowset.serial.SerialStruct;
 
-import jdk.javadoc.internal.doclets.formats.html.resources.standard;
-
 //import jdk.javadoc.internal.doclets.formats.html.resources.standard;
 
 import java.util.ArrayList;
@@ -490,15 +488,39 @@ public class DBproject{
 	}
 
 	public static void ListNumberOfAvailableSeats(DBproject esql) {//5
+
 		// For Cruise number and date, find the number of availalbe seats (i.e. total Ship capacity minus booked seats )
 	}
 
 	public static void ListsTotalNumberOfRepairsPerShip(DBproject esql) {//6
 		// Count number of repairs per Ships and list them in descending order
+		try {
+			esql.executeQueryAndPrintResult("SELECT * FROM Repairs GROUP BY ship_id ORDER BY COUNT(*)");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	
 	public static void FindPassengersCountWithStatus(DBproject esql) {//7
 		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
+
+		try {
+			String line = in.readLine();
+			if(line.isEmpty()) {
+				esql.executeQueryAndPrintResult("SELECT status, COUNT(*) FROM Reservation GROUP BY status");
+			} else {
+				char status = line.charAt(0);
+				esql.executeQueryAndPrintResult("SELECT COUNT(*) FROM Reservation WHERE status = '" + status + "'");
+			}
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
