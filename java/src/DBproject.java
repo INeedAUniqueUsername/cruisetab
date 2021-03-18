@@ -117,12 +117,12 @@ public class DBproject{
 				for(int i = 1; i <= numCol; i++){
 					System.out.print(rsmd.getColumnName(i) + "\t");
 			    }
-			    println();
+			    println("");
 			    outputHeader = false;
 			}
 			for (int i=1; i<=numCol; ++i)
 				System.out.print (rs.getString (i) + "\t");
-			println ();
+			println ("");
 			++rowCount;
 		}//end while
 		stmt.close ();
@@ -404,7 +404,7 @@ public class DBproject{
 		int seats = getInt(1, 499);
 
 		try {
-			esql.executeUpdate(String.format("INSERT INTO Ship VALUES(%d, %s, %s, %d, %d)",
+			esql.executeUpdate(String.format("INSERT INTO Ship VALUES(%d, '%s', '%s', %d, %d)",
 				esql.getNextVal("ship_seq"),
 				make,
 				model,
@@ -553,12 +553,16 @@ public class DBproject{
 		try {
 			println2("Enter cruise number: ");
 			int cnum = getInt(0);
-
+			println2("Checking...");
 			while(esql.executeQuery(String.format("SELECT * FROM Cruise WHERE cnum = %d", cnum)) == 0) {
 				println("Invalid cruise number");
 				println2("Enter cruise number: ");
-				cnum = getInt(0);	
+				cnum = getInt(0);
+				println2("Checking...");
 			}
+			println2("Cruise found!");
+			println2("Enter cruise date");
+
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -569,7 +573,7 @@ public class DBproject{
 	public static void ListsTotalNumberOfRepairsPerShip(DBproject esql) {//6
 		// Count number of repairs per Ships and list them in descending order
 		try {
-			esql.executeQueryAndPrintResult("SELECT * FROM Repairs GROUP BY ship_id ORDER BY COUNT(*)");
+			esql.executeQueryAndPrintResult("SELECT ship_id, COUNT(*) FROM Repairs GROUP BY ship_id ORDER BY -COUNT(*)");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -580,6 +584,7 @@ public class DBproject{
 	public static void FindPassengersCountWithStatus(DBproject esql) {//7
 		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
 
+		println("Enter status to count (enter nothing to count all)");
 		try {
 			String line = in.readLine();
 			if(line.isEmpty()) {
@@ -588,6 +593,7 @@ public class DBproject{
 				char status = line.charAt(0);
 				esql.executeQueryAndPrintResult("SELECT COUNT(*) FROM Reservation WHERE status = '" + status + "'");
 			}
+			println("");
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
