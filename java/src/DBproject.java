@@ -14,6 +14,9 @@
 import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -288,6 +291,7 @@ public class DBproject{
 				}
 			}
 		}catch(Exception e){
+			println("Error!");
 			System.err.println (e.getMessage ());
 		}finally{
 			try{
@@ -453,7 +457,7 @@ public class DBproject{
 		println2("Enter departure port code: ");
 		String departure_port = getString(5);
 		try {
-			esql.executeUpdate(String.format("INSERT INTO Cruise VALUES(%d, %d, %d, %d, %s, %s, %s, %s)",
+			esql.executeUpdate(String.format("INSERT INTO Cruise VALUES(%d, %d, %d, %d, '%s', '%s', '%s', '%s')",
 				esql.getNextVal("cruise_seq"),
 				cost,
 				num_sold,
@@ -477,8 +481,6 @@ public class DBproject{
 	departure_port CHAR(5) NOT NULL,-- PORT CODE --
 	PRIMARY KEY (cnum)
 	*/
-
-
 	}
 
 
@@ -502,34 +504,47 @@ public class DBproject{
 			int cnum = getInt(0);
 	
 			while(esql.executeQuery(String.format("SELECT * FROM Cruise WHERE cnum = %d", cnum)) == 0) {
-				println("Invalid cruise number");
+				println2("Invalid cruise number");
 				
 				println2("Enter cruise number: ");
 				cnum = getInt(0);	
 			}
 
+			println2("Checking reservations...");
 
 			if(esql.executeQuery(String.format("SELECT * FROM Reservation WHERE ccid = %d AND cid = %d", customerId, cnum)) == 0) {
-				
+				println2("Adding reservation...");
+
+
 				List<List<String>> r = esql.executeQueryAndReturnResult(String.format(
-					"SELECT (num_sold, seats) FROM CruiseInfo NATURAL JOIN Cruise NATURAL JOIN Ship WHERE cnum = %d",
+					"SELECT num_sold, seats FROM CruiseInfo NATURAL JOIN Cruise NATURAL JOIN Ship WHERE cnum = %d",
 					cnum
 					));
 				List<String> r0 = r.get(0);
+
+				//println("Sold: " + r0.get(0));
+				//println("Seats: " + r0.get(1));
 				if(Integer.parseInt(r0.get(0)) < Integer.parseInt(r0.get(1))){
 					esql.executeUpdate(String.format(
-						"INSERT INTO Reservation VALUES(%d, %d, %d, %s)",
+						"INSERT INTO Reservation VALUES(%d, %d, %d, '%s')",
 						esql.getNextVal("reservation_seq"),
 						customerId,
 						cnum,
 						'R'
 						));
+
+					//Increment num_sold on Cruise
+					esql.executeUpdate(String.format(
+						"UPDATE Cruise SET num_sold = num_sold + 1 WHERE cnum = %d",
+						cnum
+						));
+
 					println2("Reserved!");
 				} else {
 					println2("Cruise is full. Enter waitlist?");
 					if(getString(1).equalsIgnoreCase("y")) {
 						esql.executeUpdate(String.format(
-							"INSERT INTO Reservation VALUES(%d, %d, %d, %s)",
+							"INSERT INTO Reservation VALUES(%d, %d, %d, '%s')",
 							esql.getNextVal("reservation_seq"),
 							customerId,
 							cnum,
@@ -547,6 +562,29 @@ public class DBproject{
 		}
 	}
 
+	public static String getDate() {
+		while(true) {
+			String line;
+			try {
+				line = in.readLine();
+
+				
+				DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				sdf.setLenient(false);
+				
+				sdf.parse(line);
+				return line;
+
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				println("Invalid date!");
+			}
+		}
+	}
 	public static void ListNumberOfAvailableSeats(DBproject esql) {//5
 		// For Cruise number and date, find the number of availalbe seats (i.e. total Ship capacity minus booked seats )
 		
@@ -561,8 +599,23 @@ public class DBproject{
 				println2("Checking...");
 			}
 			println2("Cruise found!");
-			println2("Enter cruise date");
+			println2("Enter cruise date (YYYY-MM-DD): ");
+			String date = getDate();
 
+
+			List<List<String>> r = esql.executeQueryAndReturnResult(String.format(
+				"SELECT num_sold, seats FROM Schedule NATURAL JOIN CruiseInfo NATURAL JOIN Cruise NATURAL JOIN Ship WHERE cnum = %d AND departure_time = '%s'",
+				date,
+				cnum
+				));
+			if(r.size() > 0) {
+				List<String> r0 = r.get(0);
+				//println("Sold: " + r0.get(0));
+				//println("Seats: " + r0.get(1));
+				println("Available: " + Integer.toString(Integer.parseInt(r0.get(1)) - Integer.parseInt(r0.get(0))));
+			} else {
+				println2("Could not find cruise with that date.");
+			}
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
