@@ -66,7 +66,6 @@ public class DBproject{
 	}
 	public static void println2(String... lines) {
 		println(lines);
-		println("");
 	}
 
 	/**
@@ -485,11 +484,86 @@ public class DBproject{
 
 	public static void BookCruise(DBproject esql) {//4
 		// Given a customer and a Cruise that he/she wants to book, add a reservation to the DB
+
+		try {
+
+
+			println2("Enter customer id: ");
+			int customerId = getInt(0);	
+			
+			while(esql.executeQuery(String.format("SELECT * FROM Customer WHERE id = %d", customerId)) == 0) {
+				println("Invalid customer id");
+				
+				println2("Enter customer id: ");
+				customerId = getInt(0);	
+			}
+
+			println2("Enter cruise number: ");
+			int cnum = getInt(0);
+	
+			while(esql.executeQuery(String.format("SELECT * FROM Cruise WHERE cnum = %d", cnum)) == 0) {
+				println("Invalid cruise number");
+				
+				println2("Enter cruise number: ");
+				cnum = getInt(0);	
+			}
+
+
+			if(esql.executeQuery(String.format("SELECT * FROM Reservation WHERE ccid = %d AND cid = %d", customerId, cnum)) == 0) {
+				
+				List<List<String>> r = esql.executeQueryAndReturnResult(String.format(
+					"SELECT (num_sold, seats) FROM CruiseInfo NATURAL JOIN Cruise NATURAL JOIN Ship WHERE cnum = %d",
+					cnum
+					));
+				List<String> r0 = r.get(0);
+				if(Integer.parseInt(r0.get(0)) < Integer.parseInt(r0.get(1))){
+					esql.executeUpdate(String.format(
+						"INSERT INTO Reservation VALUES(%d, %d, %d, %s)",
+						esql.getNextVal("reservation_seq"),
+						customerId,
+						cnum,
+						'R'
+						));
+					println2("Reserved!");
+				} else {
+					println2("Cruise is full. Enter waitlist?");
+					if(getString(1).equalsIgnoreCase("y")) {
+						esql.executeUpdate(String.format(
+							"INSERT INTO Reservation VALUES(%d, %d, %d, %s)",
+							esql.getNextVal("reservation_seq"),
+							customerId,
+							cnum,
+							'W'
+							));
+						println2("Entered waitlist");
+					}
+				}
+			} else {
+				println2("Reservation already exists");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public static void ListNumberOfAvailableSeats(DBproject esql) {//5
-
 		// For Cruise number and date, find the number of availalbe seats (i.e. total Ship capacity minus booked seats )
+		
+		try {
+			println2("Enter cruise number: ");
+			int cnum = getInt(0);
+
+			while(esql.executeQuery(String.format("SELECT * FROM Cruise WHERE cnum = %d", cnum)) == 0) {
+				println("Invalid cruise number");
+				println2("Enter cruise number: ");
+				cnum = getInt(0);	
+			}
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public static void ListsTotalNumberOfRepairsPerShip(DBproject esql) {//6
