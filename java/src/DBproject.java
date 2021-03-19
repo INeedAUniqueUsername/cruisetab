@@ -279,15 +279,24 @@ public class DBproject{
 				println("7. Find total number of passengers with a given status");
 				println("8. < EXIT");
 				
-				switch (readChoice()){
-					case 1: AddShip(esql); break;
-					case 2: AddCaptain(esql); break;
-					case 3: AddCruise(esql); break;
-					case 4: BookCruise(esql); break;
-					case 5: ListNumberOfAvailableSeats(esql); break;
-					case 6: ListsTotalNumberOfRepairsPerShip(esql); break;
-					case 7: FindPassengersCountWithStatus(esql); break;
-					case 8: keepon = false; break;
+				int choice = readChoice();
+				try {
+					switch (choice){
+						case 1: AddShip(esql); break;
+						case 2: AddCaptain(esql); break;
+						case 3: AddCruise(esql); break;
+						case 4: BookCruise(esql); break;
+						case 5: ListNumberOfAvailableSeats(esql); break;
+						case 6: ListsTotalNumberOfRepairsPerShip(esql); break;
+						case 7: FindPassengersCountWithStatus(esql); break;
+						case 8: keepon = false; break;
+					}
+				} catch(Exception e) {
+					
+					println("Error!");
+					System.err.println (e.getMessage ());
+					println("Query canceled.");
+					in.readLine();
 				}
 			}
 		}catch(Exception e){
@@ -415,6 +424,12 @@ public class DBproject{
 				age,
 				seats
 			));
+
+			println2("Ship added.");
+
+			
+			println("Query complete.");
+			in.readLine();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -436,6 +451,12 @@ public class DBproject{
 				fullname,
 				nationality
 			));
+
+			println2("Captain added.");
+
+				
+			println("Query complete.");
+			in.readLine();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -467,6 +488,12 @@ public class DBproject{
 				arrival_port,
 				departure_port
 			));
+
+			println2("Cruise added");
+
+			
+			println("Query complete.");
+			in.readLine();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -556,7 +583,13 @@ public class DBproject{
 			} else {
 				println2("Reservation already exists");
 			}
+
+			println("Query complete.");
+			in.readLine();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -570,7 +603,7 @@ public class DBproject{
 
 				
 				DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-				sdf.setLenient(false);
+				sdf.setLenient(true);
 				
 				sdf.parse(line);
 				return line;
@@ -580,8 +613,9 @@ public class DBproject{
 				e1.printStackTrace();
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				println("Invalid date!");
+				println("Invalid date! Please enter a valid date in yyyy-MM-dd format:");
+			} catch(Exception e) {
+				println("Unknown error");
 			}
 		}
 	}
@@ -603,21 +637,40 @@ public class DBproject{
 			String date = getDate();
 
 
-			List<List<String>> r = esql.executeQueryAndReturnResult(String.format(
-				"SELECT num_sold, seats FROM Schedule NATURAL JOIN CruiseInfo NATURAL JOIN Cruise NATURAL JOIN Ship WHERE cnum = %d AND departure_time = '%s'",
-				date,
-				cnum
-				));
+
+			List<List<String>> r;
+			
+			do {
+				try {
+					r = esql.executeQueryAndReturnResult(String.format(
+						"SELECT num_sold, seats FROM Schedule NATURAL JOIN CruiseInfo NATURAL JOIN Cruise NATURAL JOIN Ship WHERE cnum = %d AND departure_time = '%s'",
+						cnum,
+						date
+						));
+						
+					break;
+				} catch(Exception e) {
+					println2("Date is out of range. Please enter a valid date:");
+					date = getDate();
+				}
+
+			} while(true);
+
+
 			if(r.size() > 0) {
 				List<String> r0 = r.get(0);
-				//println("Sold: " + r0.get(0));
-				//println("Seats: " + r0.get(1));
+				println("Sold: " + r0.get(0));
+				println("Seats: " + r0.get(1));
 				println("Available: " + Integer.toString(Integer.parseInt(r0.get(1)) - Integer.parseInt(r0.get(0))));
 			} else {
 				println2("Could not find cruise with that date.");
 			}
-
+			println("Query complete.");
+			in.readLine();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -627,7 +680,14 @@ public class DBproject{
 		// Count number of repairs per Ships and list them in descending order
 		try {
 			esql.executeQueryAndPrintResult("SELECT ship_id, COUNT(*) FROM Repairs GROUP BY ship_id ORDER BY -COUNT(*)");
+
+			
+			println("Query complete.");
+			in.readLine();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -637,7 +697,7 @@ public class DBproject{
 	public static void FindPassengersCountWithStatus(DBproject esql) {//7
 		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
 
-		println("Enter status to count (enter nothing to count all)");
+		println("Enter a status (W/C/R) to count (enter nothing to count all)");
 		try {
 			String line = in.readLine();
 			if(line.isEmpty()) {
@@ -646,7 +706,9 @@ public class DBproject{
 				char status = line.charAt(0);
 				esql.executeQueryAndPrintResult("SELECT COUNT(*) FROM Reservation WHERE status = '" + status + "'");
 			}
-			println("");
+
+			println("Query complete.");
+			in.readLine();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
