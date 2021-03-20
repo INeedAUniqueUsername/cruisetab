@@ -1,6 +1,7 @@
 #! /bin/bash
 echo "creating db named ... "$USER"_DB"
 export PGPORT=5432
+export PGDATA=$folder/myDB/data
 createdb -h localhost -p $PGPORT $USER"_DB"
 pg_ctl status
 

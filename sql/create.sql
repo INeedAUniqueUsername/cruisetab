@@ -246,3 +246,20 @@ COPY Schedule (
 )
 FROM 'schedule.csv'
 WITH DELIMITER ',';
+
+
+
+
+
+-- Indexes
+
+CREATE INDEX customer_by_id
+	ON Customer
+	USING BTREE
+	(id);
+
+CREATE INDEX cruise_by_cnum
+	ON Cruise
+	USING BTREE
+	(cnum);
+CLUSTER cruise_by_cnum on Cruise;
