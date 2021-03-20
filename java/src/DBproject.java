@@ -33,6 +33,7 @@ import javax.sql.rowset.serial.SerialStruct;
 //import jdk.javadoc.internal.doclets.formats.html.resources.standard;
 
 import java.util.ArrayList;
+import java.util.Date;
 /**
  * This class defines a simple embedded SQL utility class that is designed to
  * work with PostgreSQL JDBC drivers.
@@ -278,7 +279,11 @@ public class DBproject{
 				println("6. List total number of repairs per Ship in descending order");
 				println("7. Find total number of passengers with a given status");
 				println("8. < EXIT");
-				
+				println("9. Show Total Number of Reservation made");
+				println("10. Find Cruise by departure date");
+				println("11. Find Cruise Schedule ");
+
+ 				
 				int choice = readChoice();
 				try {
 					switch (choice){
@@ -290,7 +295,12 @@ public class DBproject{
 						case 6: ListsTotalNumberOfRepairsPerShip(esql); break;
 						case 7: FindPassengersCountWithStatus(esql); break;
 						case 8: keepon = false; break;
+						case 9: CountTotalReserv(esql); break;
+						case 10: DisplayCruisesOnDate(esql);break;
+						case 11: DispCruiseSchedule(esql);break;	
+
 					}
+
 				} catch(Exception e) {
 					
 					println("Error!");
@@ -693,8 +703,85 @@ public class DBproject{
 		}
 	}
 
-	
-	public static void FindPassengersCountWithStatus(DBproject esql) {//7
+
+
+
+
+
+public static void CountTotalReserv(DBproject esql) {//9
+		// 
+	try{
+	println("Total Reservation made: ");		
+				esql.executeQueryAndPrintResult("SELECT COUNT(rnum) FROM Reservation");
+  	println("Query complete.");
+	in.readLine();
+     } catch (IOException e) {
+        /// TODO Auto-generated catch block
+            e.printStackTrace();
+     } catch (SQLException e) {
+       // TODO Auto-generated catch block
+       e.printStackTrace();
+          }
+}
+//
+
+
+public static void DisplayCruisesOnDate(DBproject esql){//10.
+	try{
+
+		println("Enter a date (YYYY-MM-DD format). Enter none to use today's date");
+		String line = in.readLine();
+		if(line.isEmpty()) {
+			line = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+			println(String.format("Today's date is %s", line));
+		}
+		println(" Searching . . .");
+
+		esql.executeQueryAndPrintResult(String.format(
+			"SELECT cruiseNum, arrival_time FROM Schedule WHERE departure_time = '%s'",
+			line
+			));
+		
+		println("Query complete.");
+		in.readLine();
+
+	} catch (IOException e) {
+                        // TODO Auto-generated catch block
+                   e.printStackTrace();
+         } catch (SQLException e) {
+                       // TODO Auto-generated catch block
+                   e.printStackTrace();
+                        }
+   }
+          
+//
+
+
+public static void DispCruiseSchedule(DBproject esql){//11.
+
+		try{
+	        println(" Enter your Cruise number( valid input range 0 - 1999) : ");
+                         
+			int crNum= getInt(0);
+			println(" Searching . . .");
+
+			esql.executeQueryAndPrintResult("SELECT * FROM Schedule WHERE cruiseNum = '" + crNum + "'");
+                        
+			println("Query complete.");
+			in.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+//
+
+    public static void FindPassengersCountWithStatus(DBproject esql) {//7
 		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
 
 		println("Enter a status (W/C/R) to count (enter nothing to count all)");
@@ -718,4 +805,10 @@ public class DBproject{
 			e.printStackTrace();
 		}
 	}
+
+
+
+
+
+
 }

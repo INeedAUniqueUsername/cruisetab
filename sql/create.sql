@@ -263,3 +263,4 @@ CREATE INDEX cruise_by_cnum
 	USING BTREE
 	(cnum);
 CLUSTER cruise_by_cnum on Cruise;
+CLUSTER customer_by_id on Customer;
